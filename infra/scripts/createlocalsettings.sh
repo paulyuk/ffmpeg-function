@@ -2,7 +2,7 @@
 
 set -e
 
-if [ ! -f "./app/local.settings.json" ]; then
+if [ ! -f "./local.settings.json" ]; then
 
     output=$(azd env get-values)
 
@@ -20,7 +20,7 @@ if [ ! -f "./app/local.settings.json" ]; then
         fi
     done <<< "$output"
 
-    cat <<EOF > ./app/local.settings.json
+    cat <<EOF > ./local.settings.json
 {
     "IsEncrypted": "false",
     "Values": {
