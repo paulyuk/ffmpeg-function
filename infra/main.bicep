@@ -33,6 +33,7 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = { 'azd-env-name': environmentName }
 var functionAppName = !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesFunctions}api-${resourceToken}'
 var deploymentStorageContainerName = 'app-package-${take(functionAppName, 32)}-${take(toLower(uniqueString(functionAppName, resourceToken)), 7)}'
+var filesStorageContainerName = 'azurefiles'
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -95,6 +96,7 @@ module storage 'core/storage/storage-account.bicep' = {
     tags: tags
     containers: [
       {name: deploymentStorageContainerName}
+      {name: filesStorageContainerName}
      ]
      networkAcls: skipVnet ? {} : {
         defaultAction: 'Deny'
@@ -209,4 +211,5 @@ output SERVICE_API_NAME string = api.outputs.SERVICE_API_NAME
 output SERVICE_API_URI string = api.outputs.SERVICE_API_URI
 output AZURE_FUNCTION_APP_NAME string = api.outputs.SERVICE_API_NAME
 output RESOURCE_GROUP string = rg.name
-
+output AZURE_STORAGE_ACCOUNT_NAME string = storage.outputs.name
+output AZURE_BLOB_NAME string = filesStorageContainerName

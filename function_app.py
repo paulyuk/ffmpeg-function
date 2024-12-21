@@ -44,14 +44,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     blob_name = 'ffmpeg'
     local_ffmpeg_path = '/tmp/ffmpeg'
 
-   # Download the FFmpeg binary from Azure blob
-    try:
-        download_ffmpeg_from_blob(storage_account_name, container_name, blob_name, local_ffmpeg_path)
-    except Exception as e:
-        logging.error(f"Error downloading FFmpeg binary from Azure File Share: {str(e)}")
-        return func.HttpResponse(f"Error downloading FFmpeg binary from Azure File Share: {str(e)}", status_code=500)
-   
-   # Ensure the file is executable
+    # Check if running locally
+    if not os.getenv('WEBSITE_INSTANCE_ID'):
+        local_ffmpeg_path = os.path.join(os.getcwd(), 'macffmpeg', 'ffmpeg')
+        logging.info("Running locally, using FFmpeg from macffmpeg folder")
+    else:
+        # Download the FFmpeg binary from Azure blob
+        try:
+            download_ffmpeg_from_blob(storage_account_name, container_name, blob_name, local_ffmpeg_path)
+        except Exception as e:
+            logging.error(f"Error downloading FFmpeg binary from Azure File Share: {str(e)}")
+            return func.HttpResponse(f"Error downloading FFmpeg binary from Azure File Share: {str(e)}", status_code=500)
+
+    # Ensure the file is executable
     try:
         os.chmod(local_ffmpeg_path, 0o755)
     except Exception as e:
@@ -88,4 +93,3 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         error_message = f"ffmpeg execution error: {str(e)}, stdout: {e.stdout.decode()}, stderr: {e.stderr.decode()}"
         logging.error(error_message)
         return func.HttpResponse(error_message, status_code=500)
-    
